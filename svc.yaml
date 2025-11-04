@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"creationTimestamp":"2025-10-08T15:09:31Z","labels":{"app":"integration"},"name":"integration","namespace":"int-frontend","resourceVersion":"454826710","uid":"5b061811-8e15-4099-9b5d-0e49f5417989"},"spec":{"clusterIP":"172.30.208.245","clusterIPs":["172.30.208.245"],"internalTrafficPolicy":"Cluster","ipFamilies":["IPv4"],"ipFamilyPolicy":"SingleStack","ports":[{"name":"http","port":8080,"protocol":"TCP","targetPort":8080},{"name":"https","port":8443,"protocol":"TCP","targetPort":8443}],"selector":{"app":"integration"},"sessionAffinity":"None","type":"ClusterIP"},"status":{"loadBalancer":{}}}
+  creationTimestamp: "2025-10-08T15:09:31Z"
+  labels:
+    app: integration
+  name: integration
+  namespace: int-frontend
+  resourceVersion: "455566094"
+  uid: 5b061811-8e15-4099-9b5d-0e49f5417989
+spec:
+  clusterIP: 172.30.208.245
+  clusterIPs:
+  - 172.30.208.245
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: integration
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
