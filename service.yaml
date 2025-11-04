@@ -1,1 +1,15 @@
-
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "Epay_Website.fullname" . }}
+  labels:
+    {{- include "Epay_Website.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: {{ .Values.service.port }}-tcp
+  selector:
+    {{- include "Epay_Website.selectorLabels" . | nindent 4 }}
