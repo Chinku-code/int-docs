@@ -1,11 +1,10 @@
-#FROM registry.dev.sbiepay.sbi:8443/ubi9/nginx-126:9.6-1755735243
 FROM registry.dev.sbiepay.sbi:8443/ubi9/nginx-126:9.6-1756959223
 USER 0
-RUN mkdir -p /usr/share/nginx/html/merchantpanel
-COPY ./dist/ /usr/share/nginx/html/merchantpanel
-RUN ls -lrth /usr/share/nginx/html/merchantpanel
-RUN chmod 755 -R  /usr/share/nginx/html/merchantpanel
-RUN chown -R nginx:nginx /usr/share/nginx/html/merchantpanel
+RUN mkdir -p /usr/share/nginx/html/merchantintegration
+COPY ./dist/ /usr/share/nginx/html/merchantintegration
+RUN ls -lrth /usr/share/nginx/html/merchantintegration
+RUN chmod 755 -R  /usr/share/nginx/html/merchantintegration
+RUN chown -R nginx:nginx /usr/share/nginx/html/merchantintegration
 COPY ./nginx.conf /etc/nginx/nginx.conf
 RUN find /etc/nginx -type d | xargs chmod 750
 RUN find /etc/nginx -type f | xargs chmod 640
