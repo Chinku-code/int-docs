@@ -1,0 +1,9 @@
+include:
+  - project: 'epay/devops/ci-templates'
+    ref: main
+    file: 'templates/fe/vite.react.yml'
+
+
+variables:
+  RELEASE_NAME: websitefe   
+  CHART_NAME: epay-website
