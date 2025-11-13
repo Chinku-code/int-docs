@@ -1,312 +1,230 @@
-include:
-  - project: 'epay/devops/ci-templates'
-    ref: feature/integration
-    file: 'ci/test/gradle.java.yml'
-  - project: 'epay/devops/ci-templates'
-    ref: feature/integration
-    file: 'ci/sast/sast.yml'
-  - project: 'epay/devops/ci-templates'
-    ref: feature/integration
-    file: 'ci/sast/fortify.sast.yml'
-  - project: 'epay/devops/ci-templates'
-    ref: feature/integration
-    file: 'ci/release/version.yml'
-  - project: 'epay/devops/ci-templates'
-    ref: feature/integration
-    file: 'ci/release/release.yml'
-  - project: 'epay/devops/ci-templates'
-    ref: feature/integration
-    file: 'ci/build/podman.container.yml'
-  - project: 'epay/devops/ci-templates'
-    ref: feature/integration
-    file: 'ci/deploy/deployment.yml'
+# Default values for Epay_Merchant_FE.
+## This is a YAML-formatted file.
+## Declare variables to be passed into your templates.
 
-stages:
-- test
-- sast
-- hp-fortify
-- release
-- dockerbuild
-- deploy
+replicaCount: 1
 
-variables:
-  CI_TEMPLATE_REGISTRY_HOST: "registry.dev.sbiepay.sbi:8443"
-  CI_TEMPLATE_REGISTRY_HOST_PREPROD: "epaynonprod-registry-quay-quay-enterprise.apps.preprod.epay.sbi"
-  CI_TEMPLATE_REGISTRY_HOST_PROD: "registry.prod.epay.sbi:8443"
-  CI_TEMPLATE_REGISTRY_HOST_PRODDR: "epayproddr-registry-quay-quay-enterprise.apps.dr.prod.epay.sbi"
-  CI_TEMPLATE_REGISTRY_HOST_PRODDC: "proddc-registry-route-quay-enterprise.apps.dc.prod.epay.sbi"
-  GIT_STRATEGY: clone
-  CI_USERNAME: "gitlab-ci-token"
-  RELEASE_NAME: null
-  CHART_NAME: null
-  IMAGE_NAME: "library/$CHART_NAME"
+image:
+  #repository: registry.dev.sbiepay.sbi:8443/ubi9/{{ .Chart.Name }}
+  repository: registry.dev.sbiepay.sbi:8443/ubi9/{{ .Chart.Name }}
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  ##tag: "v-develop-20251103101240"
+  tag: "3110251"
+  
+  
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount: {}
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+configMap: {}
 
 
-.rules:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(main)|(develop)|(release)(\/.+)*$/'
-    - if: '$CI_COMMIT_BRANCH =~ /^(main)|(develop)|(release)(\/.+)*$/'
-    - when: never
-     
-# build:
-#   extends: 
-#     - .build
-#     - .rules
-
-test:
-  extends: 
-    - .test
-    - .rules
-
-sast:
-  extends:
-    - .sast
-    - .rules
-
-hp-fortify:
-  extends:
-    - .HPFortify
-    - .rules
-
-tag:
-  extends:
-    - .tag
-
-dockerbuild:
-  extends:
-    - .dockerbuild
-    - .rules
-
-deploy-dev:
-  variables:
-    ENV: dev
-    SERVICE_NAME: $CI_PROJECT_NAME
-    VERSION: $VERSION
-  extends:
-    - .trigger_cd
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(develop)$/
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(develop)$/
-      when: manual
-      allow_failure: true
-    - when: never
-
-deploy-sit:
-  variables:
-    ENV: sit
-    SERVICE_NAME: $CI_PROJECT_NAME
-    VERSION: $VERSION
-  extends:
-    - .trigger_cd
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - when: never
-
-deploy-uat:
-  variables:
-    ENV: uat
-    SERVICE_NAME: $CI_PROJECT_NAME
-    VERSION: $VERSION
-  extends:
-    - .trigger_cd
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - when: never
-
-deploy-int:
-  variables:
-    ENV: int
-    SERVICE_NAME: $CI_PROJECT_NAME
-    VERSION: $VERSION
-  extends:
-    - .trigger_cd
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - when: never
+securityContext: {}
 
 
-promote-image-pre-prod:
-  stage: deploy
-  variables:
-    REGISTRY_USERNAME: $PREPROD_REGISTRY_USERNAME
-    REGISTRY_PASSWORD: $PREPROD_REGISTRY_PASSWORD
-    TARGET_IMAGE_NAME: "microservices/$CHART_NAME"
-  script:
-    - podman login -u $IMAGE_REGISTRY_USERNAME -p $IMAGE_REGISTRY_PASS $CI_TEMPLATE_REGISTRY_HOST --tls-verify=false
-    - podman login -u microservices+preprod -p Y37PK8H33NIJVND7HA68OJQZX776SKHPP81XI7BQ94JH92UAJ1GVA144GPYC9PGU epaynonprod-registry-quay-quay-enterprise.apps.preprod.epay.sbi --tls-verify=false
-    #- podman login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $CI_TEMPLATE_REGISTRY_HOST_PREPROD --tls-verify=false
-    - podman pull $CI_TEMPLATE_REGISTRY_HOST/$IMAGE_NAME:$VERSION --tls-verify=false
-    - podman tag $CI_TEMPLATE_REGISTRY_HOST/$IMAGE_NAME:$VERSION $CI_TEMPLATE_REGISTRY_HOST_PREPROD/$TARGET_IMAGE_NAME:$VERSION
-    - podman push $CI_TEMPLATE_REGISTRY_HOST_PREPROD/$TARGET_IMAGE_NAME:$VERSION --tls-verify=false
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - when: never
+service:
+  type: ClusterIP
+  port: 8080
 
-deploy-pre-prod:
-  variables:
-    ENV: pre-prod
-    SERVICE_NAME: $CI_PROJECT_NAME
-    DEPLOYMENT_BRANCH: main
-  extends:
-    - .trigger_cd
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - when: never
+ingress: {}
 
-deploy-perf:
-  variables:
-    ENV: perf
-    SERVICE_NAME: $CI_PROJECT_NAME
-    DEPLOYMENT_BRANCH: main
-    VERSION: $VERSION
-  extends:
-    - .trigger_cd
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - when: never
 
-promote-image-pre-prod-dc:
-  stage: deploy
-  variables:
-    REGISTRY_USERNAME: $PREPROD_DC_REGISTRY_USERNAME
-    REGISTRY_PASSWORD: $PREPROD_DC_REGISTRY_PASSWORD
-    TARGET_IMAGE_NAME: "microservices/$CHART_NAME"
-  script:
-    - podman login -u $IMAGE_REGISTRY_USERNAME -p $IMAGE_REGISTRY_PASS $CI_TEMPLATE_REGISTRY_HOST --tls-verify=false
-    - podman login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $CI_TEMPLATE_REGISTRY_HOST_PREPROD --tls-verify=false
-    - podman pull $CI_TEMPLATE_REGISTRY_HOST/$IMAGE_NAME:$VERSION --tls-verify=false
-    - podman tag $CI_TEMPLATE_REGISTRY_HOST/$IMAGE_NAME:$VERSION $CI_TEMPLATE_REGISTRY_HOST_PREPROD/$TARGET_IMAGE_NAME:$VERSION
-    - podman push $CI_TEMPLATE_REGISTRY_HOST_PREPROD/$TARGET_IMAGE_NAME:$VERSION --tls-verify=false
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - when: never
+namespace: dev-frontend
+gatewayName: dev-istio-system/dev-gateway
+virtualServiceName: epay_merchantintegration_fe
+serviceName: epay_merchantintegration_fe
+prefixName:  /merchantintegration 
+servicePort: 8080
+gatewayPort: 80
+gatewayHost: "dev.epay.sbi"
 
-deploy-pre-prod-dc:
-  variables:
-    ENV: pre-prod-dc
-    SERVICE_NAME: $CI_PROJECT_NAME
-    VERSION: $VERSION
-  extends:
-    - .trigger_cd
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(release)(\/.+)*$/
-      when: manual
-      allow_failure: true
-    - when: never
+readinessProbe: {}
+livenessProbe: {}
 
-promote-image-prod-dr:
-  stage: deploy
-  variables:
-    REGISTRY_USERNAME: $PROD_DR_REGISTRY_USERNAME
-    REGISTRY_PASSWORD: $PROD_DR_REGISTRY_PASSWORD
-    TARGET_IMAGE_NAME: "microservices/$CHART_NAME"
-  script:
-    - podman login -u $IMAGE_REGISTRY_USERNAME -p $IMAGE_REGISTRY_PASS $CI_TEMPLATE_REGISTRY_HOST --tls-verify=false
-    #- podman login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $CI_TEMPLATE_REGISTRY_HOST_PRODDR --tls-verify=false
-    - podman login -u='microservices+microservices_prod_dr' -p='DC91U2U38YMH21BLBXYTY8JLNNYXH0GZT7LQ6B4261IR5LJPEXAE7EGRC76866XW' epayproddr-registry-quay-quay-enterprise.apps.dr.prod.epay.sbi --tls-verify=false
-    - podman pull $CI_TEMPLATE_REGISTRY_HOST/$IMAGE_NAME:$VERSION --tls-verify=false
-    - podman tag $CI_TEMPLATE_REGISTRY_HOST/$IMAGE_NAME:$VERSION $CI_TEMPLATE_REGISTRY_HOST_PRODDR/$TARGET_IMAGE_NAME:$VERSION
-    - podman push $CI_TEMPLATE_REGISTRY_HOST_PRODDR/$TARGET_IMAGE_NAME:$VERSION --tls-verify=false
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(main)$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(main)$/
-      when: manual
-      allow_failure: true
-    - when: never
 
-deploy-prod-dr:
-  variables:
-    ENV: prod-dr
-    SERVICE_NAME: $CI_PROJECT_NAME
-    DEPLOYMENT_BRANCH: main
-    VERSION: $VERSION
-  extends:
-    - .trigger_cd
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(main)$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(main)$/
-      when: manual
-      allow_failure: true
-    - when: never
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
 
-promote-image-prod-dc:
-  stage: deploy
-  variables:
-    REGISTRY_USERNAME: $PROD_DC_REGISTRY_USERNAME
-    REGISTRY_PASSWORD: $PROD_DC_REGISTRY_PASSWORD
-    TARGET_IMAGE_NAME: "microservices/$CHART_NAME"
-  script:
-    - podman login -u $IMAGE_REGISTRY_USERNAME -p $IMAGE_REGISTRY_PASS $CI_TEMPLATE_REGISTRY_HOST --tls-verify=false
-    - echo "$REGISTRY_USERNAME:$REGISTRY_PASSWORD"
-    - podman login -u='microservices+microservices' -p='VY62CTW20B8V2TGIO0WNZGAZXDQCZUGN5F83VHY2ORR4MJRKRPO4DAPFIZ97LRYR' proddc-registry-route-quay-enterprise.apps.dc.prod.epay.sbi --tls-verify=false
-    - podman pull $CI_TEMPLATE_REGISTRY_HOST/$IMAGE_NAME:$VERSION --tls-verify=false
-    - podman tag $CI_TEMPLATE_REGISTRY_HOST/$IMAGE_NAME:$VERSION $CI_TEMPLATE_REGISTRY_HOST_PRODDC/$TARGET_IMAGE_NAME:$VERSION
-    - podman push $CI_TEMPLATE_REGISTRY_HOST_PRODDC/$TARGET_IMAGE_NAME:$VERSION --tls-verify=false
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(main)$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(main)$/
-      when: manual
-      allow_failure: true
-    - when: never
 
-deploy-prod-dc:
-  variables:
-    ENV: prod-dc
-    SERVICE_NAME: $CI_PROJECT_NAME
-    DEPLOYMENT_BRANCH: main
-    VERSION: $VERSION
-  extends:
-    - .trigger_cd
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^(main)$/
-      when: manual
-      allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(main)$/
-      when: manual
-      allow_failure: true
-    - when: never
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
 
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+________valur.yaml______________
+
+
+    - namespace: frontend
+      description: "Frontend services"
+      services:
+        - name: epay_merchant_fe
+          release: merchantfe
+          chart: epay_merchant_fe
+          health_check: /health
+          environments:
+            - dev
+            - sit
+            - uat
+            - int
+            - pre-prod
+            - perf
+            - pre-prod-dc
+            - prod-dr
+            - prod-dc
+        
+        - name: epay_transaction_fe
+          release: transactionfe
+          chart: epay_transaction_fe
+          health_check: /health
+          environments:
+            - dev
+            - sit
+            - uat
+            - int
+            - pre-prod
+            - perf
+            - pre-prod-dc
+            - prod-dr
+            - prod-dc
+
+        - name: epay_maintenance_fe
+          release: maintenancefe
+          chart: epay_maintenance_fe
+          health_check: /health
+          environments:
+            - dev
+            - sit
+            - uat
+            - int
+            - pre-prod
+            - perf
+            - pre-prod-dc
+            - prod-dr
+            - prod-dc
+
+        - name: epay_website
+          release: websitefe
+          chart: epay_website
+          health_check: /health
+          environments:
+            - dev
+            - sit
+            - uat
+            - int
+            - pre-prod
+            - perf
+            - pre-prod-dc
+            - prod-dr
+            - prod-dc
+
+        - name: epay_merchantintegration_fe
+          release: merchant-int
+          chart: epay-merchant-int
+          health_check: /health
+          environments:
+            - dev
+            - sit
+            - uat
+            - int
+            - pre-prod
+            - perf
+            - pre-prod-dc
+            - prod-dr
+            - prod-dc
+_______service.yaml___________
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "Epay_Merchantintegration_FE.fullname" . }}
+  labels:
+    {{- include "Epay_Merchantintegration_FE.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "Epay_Merchantintegration_FE.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "Epay_Merchantintegration_FE.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "Epay_Merchantintegration_FE.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ tpl .Values.image.repository $ }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+____________deployment.yaml________________
