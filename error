@@ -1,2 +1,48 @@
-epay/devops/ci-templates/cd/helm/services.yml
-epay/devops/ci-templates/templates/fe/html.yml
+- namespace: frontend
+      description: "Frontend services"
+      services:
+        - name: epay_merchant_fe
+          release: merchantfe
+          chart: epay_merchant_fe
+          health_check: /health
+          environments:
+            - dev
+            - sit
+            - uat
+            - int
+            - pre-prod
+            - perf
+            - pre-prod-dc
+            - prod-dr
+            - prod-dc
+        
+        - name: epay_transaction_fe
+          release: transactionfe
+          chart: epay_transaction_fe
+          health_check: /health
+          environments:
+            - dev
+            - sit
+            - uat
+            - int
+            - pre-prod
+            - perf
+            - pre-prod-dc
+            - prod-dr
+            - prod-dc
+
+        - name: epay_maintenance_fe
+          release: maintenancefe
+          chart: epay_maintenance_fe
+          health_check: /health
+          environments:
+            - dev
+            - sit
+            - uat
+            - int
+            - pre-prod
+            - perf
+            - pre-prod-dc
+            - prod-dr
+            - prod-dc
+
