@@ -1,48 +1,51 @@
-- namespace: frontend
-      description: "Frontend services"
-      services:
-        - name: epay_merchant_fe
-          release: merchantfe
-          chart: epay_merchant_fe
-          health_check: /health
-          environments:
-            - dev
-            - sit
-            - uat
-            - int
-            - pre-prod
-            - perf
-            - pre-prod-dc
-            - prod-dr
-            - prod-dc
-        
-        - name: epay_transaction_fe
-          release: transactionfe
-          chart: epay_transaction_fe
-          health_check: /health
-          environments:
-            - dev
-            - sit
-            - uat
-            - int
-            - pre-prod
-            - perf
-            - pre-prod-dc
-            - prod-dr
-            - prod-dc
-
-        - name: epay_maintenance_fe
-          release: maintenancefe
-          chart: epay_maintenance_fe
-          health_check: /health
-          environments:
-            - dev
-            - sit
-            - uat
-            - int
-            - pre-prod
-            - perf
-            - pre-prod-dc
-            - prod-dr
-            - prod-dc
-
+Running with gitlab-runner 17.8.0 (e4f782b3)
+  on DR-Gitlab-runner t1_CpKnL, system ID: s_5f020bf813e7
+Resolving secrets
+Preparing the "docker" executor
+00:04
+Using Docker executor with image registry.dev.sbiepay.sbi:8443/ubi9/ochelm:03122024 ...
+Using helper image:  registry.dev.sbiepay.sbi:8443/library/gitlab-runner-helper:latest  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.8.0 )
+Pulling docker image registry.dev.sbiepay.sbi:8443/library/gitlab-runner-helper:latest ...
+Using docker image sha256:c95744588b6d7e170a6866854932de40eaf1b5ed229ed818cba6a87a1f885773 for registry.dev.sbiepay.sbi:8443/library/gitlab-runner-helper:latest with digest registry.dev.sbiepay.sbi:8443/library/gitlab-runner-helper@sha256:ebbf1c21e4272ae1f8c18b034d390809c836c2fc68c0f0f6d3a5aff9760aabf5 ...
+Using helper image:  registry.dev.sbiepay.sbi:8443/library/gitlab-runner-helper:latest  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.8.0 )
+Using docker image sha256:c95744588b6d7e170a6866854932de40eaf1b5ed229ed818cba6a87a1f885773 for registry.dev.sbiepay.sbi:8443/library/gitlab-runner-helper:latest with digest registry.dev.sbiepay.sbi:8443/library/gitlab-runner-helper@sha256:ebbf1c21e4272ae1f8c18b034d390809c836c2fc68c0f0f6d3a5aff9760aabf5 ...
+Pulling docker image registry.dev.sbiepay.sbi:8443/ubi9/ochelm:03122024 ...
+Using docker image sha256:e35c3559b44abd0dfdbb0d2452de990630985a9f95782c3f92357d62e1f6db71 for registry.dev.sbiepay.sbi:8443/ubi9/ochelm:03122024 with digest registry.dev.sbiepay.sbi:8443/ubi9/ochelm@sha256:f3dea1ca55cf5f37fb762cce33f16f409e63c9ad14aa203c83963ff73244c54c ...
+Preparing environment
+00:01
+Using helper image:  registry.dev.sbiepay.sbi:8443/library/gitlab-runner-helper:latest  (overridden, default would be  registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper:x86_64-v17.8.0 )
+Using docker image sha256:c95744588b6d7e170a6866854932de40eaf1b5ed229ed818cba6a87a1f885773 for registry.dev.sbiepay.sbi:8443/library/gitlab-runner-helper:latest with digest registry.dev.sbiepay.sbi:8443/library/gitlab-runner-helper@sha256:ebbf1c21e4272ae1f8c18b034d390809c836c2fc68c0f0f6d3a5aff9760aabf5 ...
+Running on runner-t1cpknl-project-23-concurrent-0 via Gitlab-DR-Runr...
+Getting source from Git repository
+00:09
+$ git config --global http.proxy $HTTP_PROXY; git config --global https.proxy $HTTPS_PROXY; git config --global no.proxy $NO_PROXY
+Fetching changes...
+Initialized empty Git repository in /tmp/builds/epay/devops/deployment/.git/
+Created fresh repository.
+Checking out 4abf718b as detached HEAD (ref is main)...
+Skipping Git submodules setup
+Executing "step_script" stage of the job script
+00:02
+Using docker image sha256:e35c3559b44abd0dfdbb0d2452de990630985a9f95782c3f92357d62e1f6db71 for registry.dev.sbiepay.sbi:8443/ubi9/ochelm:03122024 with digest registry.dev.sbiepay.sbi:8443/ubi9/ochelm@sha256:f3dea1ca55cf5f37fb762cce33f16f409e63c9ad14aa203c83963ff73244c54c ...
+$ set -eo pipefail # collapsed multi-line command
+Using namespace: dev-frontend
+DEV_TOKEN
+Logging into OpenShift cluster...
+WARNING: Using insecure TLS client config. Setting this option is not supported!
+Logged into "https://api.dev.sbiepay.sbi:6443" as "system:serviceaccount:dev-sbiepay:cicd-sa" using the token provided.
+You have access to 191 projects, the list has been suppressed. You can list all projects with 'oc projects'
+Using project "default".
+Welcome! See 'oc help' to get started.
+Successfully switched to namespace dev-frontend
+$ set -eo pipefail # collapsed multi-line command
+Deploying "merchant-int" to dev-frontend...
+Chart path: /tmp/builds/epay/devops/deployment/dev/charts/epay_merchantintegration_fe
+Executing: helm upgrade --install "merchant-int" /tmp/builds/epay/devops/deployment/dev/charts/epay_merchantintegration_fe   --namespace dev-frontend   --history-max 10   --timeout 15m
+Release "merchant-int" does not exist. Installing it now.
+Error: template: epay_merchantintegration_fe/templates/tests/test-connection.yaml:4:12: executing "epay_merchantintegration_fe/templates/tests/test-connection.yaml" at <include "epay_merchantintegration_fe.fullname" .>: error calling include: template: no template "epay_merchantintegration_fe.fullname" associated with template "gotpl"
+Error: Helm deployment failed
+Last 5 revisions:
+Error: release name is invalid: "merchant-int"
+Cleaning up project directory and file based variables
+00:01
+ERROR: Job failed: exit code 1
