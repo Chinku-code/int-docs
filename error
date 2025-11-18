@@ -1,2 +1,72 @@
 oc logs websitefe-epay-website-567889fd5d-thzjq -c istio-proxy
 oc get deploy websitefe-epay-website -o yaml | grep -i istio -A3
+
+
+
+____________________
+
+[osuser@bastion ~]$ oc logs websitefe-epay-website-567889fd5d-thzjq -c istio-proxy
+2025-11-18T06:06:06.879442Z     info    FLAG: --concurrency="0"
+2025-11-18T06:06:06.879517Z     info    FLAG: --domain="dev-frontend.svc.cluster.local"
+2025-11-18T06:06:06.879526Z     info    FLAG: --help="false"
+2025-11-18T06:06:06.879530Z     info    FLAG: --log_as_json="false"
+2025-11-18T06:06:06.879533Z     info    FLAG: --log_caller=""
+2025-11-18T06:06:06.879537Z     info    FLAG: --log_output_level="default:info"
+2025-11-18T06:06:06.879540Z     info    FLAG: --log_stacktrace_level="default:none"
+2025-11-18T06:06:06.879548Z     info    FLAG: --log_target="[stdout]"
+2025-11-18T06:06:06.879553Z     info    FLAG: --meshConfig="./etc/istio/config/mesh"
+2025-11-18T06:06:06.879556Z     info    FLAG: --outlierLogPath=""
+2025-11-18T06:06:06.879559Z     info    FLAG: --profiling="true"
+2025-11-18T06:06:06.879562Z     info    FLAG: --proxyComponentLogLevel="misc:error"
+2025-11-18T06:06:06.879566Z     info    FLAG: --proxyLogLevel="warning"
+2025-11-18T06:06:06.879569Z     info    FLAG: --serviceCluster="istio-proxy"
+2025-11-18T06:06:06.879573Z     info    FLAG: --stsPort="0"
+2025-11-18T06:06:06.879578Z     info    FLAG: --templateFile=""
+2025-11-18T06:06:06.879582Z     info    FLAG: --tokenManagerPlugin=""
+2025-11-18T06:06:06.879597Z     info    FLAG: --vklog="0"
+2025-11-18T06:06:06.879606Z     info    Version 1.24.6-0fdb6a7e61d6f706aab5533e9568009879e97e49-Clean
+2025-11-18T06:06:06.879615Z     info    Set max file descriptors (ulimit -n) to: 1048576
+2025-11-18T06:06:06.880172Z     info    Proxy role      ips=[172.16.17.202] type=sidecar id=websitefe-epay-website-567889fd5d-thzjq.dev-frontend domain=dev-frontend.svc.cluster.local
+2025-11-18T06:06:06.880282Z     info    Apply proxy config from env {"discoveryAddress":"istiod-dev-istio.dev-istio-system.svc:15012"}
+
+2025-11-18T06:06:06.883908Z     info    cpu limit detected as 2, setting concurrency
+2025-11-18T06:06:06.884250Z     info    Effective config: binaryPath: /usr/local/bin/envoy
+concurrency: 2
+configPath: ./etc/istio/proxy
+controlPlaneAuthPolicy: MUTUAL_TLS
+discoveryAddress: istiod-dev-istio.dev-istio-system.svc:15012
+drainDuration: 45s
+proxyAdminPort: 15000
+serviceCluster: istio-proxy
+statNameLength: 189
+statusPort: 15020
+terminationDrainDuration: 5s
+
+2025-11-18T06:06:06.884269Z     info    JWT policy is third-party-jwt
+2025-11-18T06:06:06.884273Z     info    using credential fetcher of JWT type in cluster.local trust domain
+2025-11-18T06:06:06.886524Z     info    Starting default Istio SDS Server
+2025-11-18T06:06:06.886606Z     info    CA Endpoint istiod-dev-istio.dev-istio-system.svc:15012, provider Citadel
+2025-11-18T06:06:06.886648Z     info    Using CA istiod-dev-istio.dev-istio-system.svc:15012 cert with certs: var/run/secrets/istio/root-cert.pem
+2025-11-18T06:06:06.886484Z     info    Opening status port 15020
+2025-11-18T06:06:06.888497Z     info    xdsproxy        Initializing with upstream address "istiod-dev-istio.dev-istio-system.svc:15012" and cluster "Kubernetes"
+2025-11-18T06:06:06.888909Z     info    sds     Starting SDS grpc server
+2025-11-18T06:06:06.889085Z     info    sds     Starting SDS server for workload certificates, will listen on "var/run/secrets/workload-spiffe-uds/socket"
+2025-11-18T06:06:06.892261Z     info    Pilot SAN: [istiod-dev-istio.dev-istio-system.svc]
+2025-11-18T06:06:06.897008Z     info    starting Http service at 127.0.0.1:15004
+2025-11-18T06:06:06.898572Z     info    Starting proxy agent
+2025-11-18T06:06:06.898819Z     info    Envoy command: [-c etc/istio/proxy/envoy-rev.json --drain-time-s 45 --drain-strategy immediate --local-address-ip-version v4 --file-flush-interval-msec 1000 --disable-hot-restart --allow-unknown-static-fields -l warning --component-log-level misc:error --concurrency 2]
+2025-11-18T06:06:06.981412Z     warning envoy main external/envoy/source/server/server.cc:852   Usage of the deprecated runtime key overload.global_downstream_max_connections, consider switching to `envoy.resource_monitors.global_downstream_max_connections` instead.This runtime key will be removed in future.        thread=14
+2025-11-18T06:06:06.982213Z     warning envoy main external/envoy/source/server/server.cc:948   There is no configured limit to the number of allowed active downstream connections. Configure a limit in `envoy.resource_monitors.global_downstream_max_connections` resource monitor.      thread=14
+2025-11-18T06:06:06.996914Z     info    xdsproxy        connected to delta upstream XDS server: istiod-dev-istio.dev-istio-system.svc:15012     id=1
+2025-11-18T06:06:07.062797Z     info    cache   generated new workload certificate      resourceName=default latency=173.290199ms ttl=23h59m59.937222286s
+2025-11-18T06:06:07.062888Z     info    cache   Root cert has changed, start rotating root cert
+2025-11-18T06:06:07.062986Z     info    cache   returned workload trust anchor from cache       ttl=23h59m59.937015293s
+2025-11-18T06:06:07.080643Z     info    ads     ADS: new connection for node:1
+2025-11-18T06:06:07.080907Z     info    cache   returned workload certificate from cache        ttl=23h59m59.919099011s
+2025-11-18T06:06:07.082025Z     info    ads     ADS: new connection for node:2
+2025-11-18T06:06:07.082313Z     info    cache   returned workload trust anchor from cache       ttl=23h59m59.917692717s
+2025-11-18T06:06:08.052652Z     info    Readiness succeeded in 1.174715784s
+2025-11-18T06:06:08.053284Z     info    Envoy proxy is ready
+[2025-11-18T06:07:29.419Z] "GET /transactiontracking/ HTTP/1.1" 200 - via_upstream - "-" 0 482 2 1 "10.30.64.116,10.177.142.145,172.16.12.2" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" "89c6800a-581a-45f2-a0e4-b7acfbe86482" "dev.epay.sbi" "172.16.17.202:8080" inbound|8080|| 127.0.0.6:53431 172.16.17.202:8080 172.16.12.2:0 outbound_.8080_._.websitefe-epay-website.dev-frontend.svc.cluster.local default
+[2025-11-18T06:10:08.748Z] "GET /transactiontracking/ HTTP/1.1" 304 - via_upstream - "-" 0 0 1 0 "10.30.64.116,10.177.142.145,172.16.12.2" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" "93927e3f-b42b-4301-844a-97e098baf7fd" "dev.epay.sbi" "172.16.17.202:8080" inbound|8080|| 127.0.0.6:47169 172.16.17.202:8080 172.16.12.2:0 outbound_.8080_._.websitefe-epay-website.dev-frontend.svc.cluster.local default
+[osuser@bastion ~]$
