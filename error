@@ -1,20 +1,2 @@
-  Normal   Scheduled       15m   default-scheduler  Successfully assigned dev-frontend/websitefe-epay-website-567889fd5d-thzjq to worker3.dev.sbiepay.sbi
-  Normal   AddedInterface  15m   multus             Add eth0 [172.16.17.202/23] from ovn-kubernetes
-  Normal   Pulled          15m   kubelet            Container image "registry.redhat.io/openshift-service-mesh/istio-proxyv2-rhel9@sha256:a5748d50850784dd9c8e6646f5caf00c52deb4397632f02ffae5c879236d3b6c" already present on machine
-  Normal   Created         15m   kubelet            Created container istio-validation
-  Normal   Started         15m   kubelet            Started container istio-validation
-  Normal   Pulling         15m   kubelet            Pulling image "registry.dev.sbiepay.sbi:8443/ubi9/epay-website:v-develop-20251118060150"
-  Normal   Pulled          15m   kubelet            Successfully pulled image "registry.dev.sbiepay.sbi:8443/ubi9/epay-website:v-develop-20251118060150" in 2.378s (2.378s including waiting)
-  Normal   Created         15m   kubelet            Created container epay-website
-  Normal   Started         15m   kubelet            Started container epay-website
-  Normal   Pulled          15m   kubelet            Container image "registry.redhat.io/openshift-service-mesh/istio-proxyv2-rhel9@sha256:a5748d50850784dd9c8e6646f5caf00c52deb4397632f02ffae5c879236d3b6c" already present on machine
-  Normal   Created         15m   kubelet            Created container istio-proxy
-  Normal   Started         15m   kubelet            Started container istio-proxy
-  Warning  Unhealthy       15m   kubelet            Startup probe failed: Get "http://172.16.17.202:15021/healthz/ready": dial tcp 172.16.17.202:15021: connect: connection refused
-[osuser@bastion ~]$ ^C
-[osuser@bastion ~]$ oc logs websitefe-epay-website-567889fd5d-thzjq -c epay-website
-ACCESS: 10.30.64.116 - - [18/Nov/2025:06:07:29 +0000] "GET /transactiontracking/ HTTP/1.1" 200 482 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
-ACCESS: 10.30.64.116 - - [18/Nov/2025:06:10:08 +0000] "GET /transactiontracking/ HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
-[osuser@bastion ~]$ oc logs websitefe-epay-website-567889fd5d-thzjq -c epay-website
-ACCESS: 10.30.64.116 - - [18/Nov/2025:06:07:29 +0000] "GET /transactiontracking/ HTTP/1.1" 200 482 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
-ACCESS: 10.30.64.116 - - [18/Nov/2025:06:10:08 +0000] "GET /transactiontracking/ HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+oc logs websitefe-epay-website-567889fd5d-thzjq -c istio-proxy
+oc get deploy websitefe-epay-website -o yaml | grep -i istio -A3
