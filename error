@@ -1,118 +1,90 @@
-replicaCount: 2
+ACCESS: 10.191.191.196 - - [27/Nov/2025:09:04:02 +0000] "GET /merchantintegration/ HTTP/1.1" 403 548 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025/11/27 09:04:06 [error] 7#7: *2 directory index of "/usr/share/nginx/html/merchantintegration/" is forbidden, client: 10.191.191.196, server: localhost, request: "GET /merchantintegration/ HTTP/1.1", host: "integration.sbiepay.sbiuat.bank.in"
+ACCESS: 10.191.191.196 - - [27/Nov/2025:09:04:06 +0000] "GET /merchantintegration/ HTTP/1.1" 403 548 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+2025/11/27 09:05:11 [error] 7#7: *3 directory index of "/usr/share/nginx/html/merchantintegration/" is forbidden, client: 117.244.109.70, server: localhost, request: "GET /merchantintegration/ HTTP/1.1", host: "integration.sbiepay.sbiuat.bank.in"
+ACCESS: 117.244.109.70 - - [27/Nov/2025:09:05:11 +0000] "GET /merchantintegration/ HTTP/1.1" 403 548 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025/11/27 09:07:18 [error] 7#7: *4 directory index of "/usr/share/nginx/html/merchantintegration/" is forbidden, client: 117.244.109.70, server: localhost, request: "GET /merchantintegration/ HTTP/1.1", host: "integration.sbiepay.sbiuat.bank.in"
+ACCESS: 117.244.109.70 - - [27/Nov/2025:09:07:18 +0000] "GET /merchantintegration/ HTTP/1.1" 403 548 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025/11/27 09:07:22 [error] 7#7: *4 directory index of "/usr/share/nginx/html/merchantintegration/" is forbidden, client: 117.244.109.70, server: localhost, request: "GET /merchantintegration/ HTTP/1.1", host: "integration.sbiepay.sbiuat.bank.in"
+ACCESS: 117.244.109.70 - - [27/Nov/2025:09:07:22 +0000] "GET /merchantintegration/ HTTP/1.1" 403 548 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
 
-image:
-  #repository: registry.dev.sbiepay.sbi:8443/ubi9/{{ .Chart.Name }}
-  repository: registry.dev.sbiepay.sbi:8443/ubi9/{{ .Chart.Name }}
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  ##tag: "v-develop-20251118071853"
-  tag: "v-develop-20251118071853"
-  
-  
+[root@registry merchantintegration]# cat nginx.conf
+http {
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-serviceAccount: {}
+    log_format main 'ACCESS: $remote_addr - $remote_user [$time_local] '
+                  '"$request" $status $body_bytes_sent '
+                  '"$http_referer" "$http_user_agent"';
 
-podAnnotations: {}
-podLabels: {}
+        # Access logs go to STDOUT
+    access_log /dev/stdout main;
 
-podSecurityContext: {}
-  # fsGroup: 2000
+        #Error logs go to STDERR
+    error_log /dev/stderr warn;
 
-configMap: {}
+    include       mime.types;
 
+    set_real_ip_from    0.0.0.0/0;
+    real_ip_recursive   on;
+    real_ip_header      X-Forwarded-For;
 
-securityContext: {}
+    limit_req_zone      $binary_remote_addr zone=mylimit:10m rate=10r/s;
+    limit_conn_zone     $binary_remote_addr zone=limitperip:10m;
 
+    ## Start: Size Limits & Buffer Overflows ##
+    client_body_buffer_size 1k;
+    client_header_buffer_size 1k;
+    client_max_body_size 1m;
+    large_client_header_buffers 2 1k;
+    ## END: Size Limits & Buffer Overflows ##
 
-service:
-  type: ClusterIP
-  port: 8080
+    client_header_timeout 10s;
+    client_body_timeout 10s;
 
-ingress: {}
+    server {
+        listen 8080;
+        server_name localhost;
 
+        root /usr/share/nginx/html;
 
-namespace: dev-frontend
-gatewayName: dev-istio-system/dev-gateway
-virtualServiceName: dev-epay-website-epay-website    
-serviceName: websitefe-epay-website
-prefixName:  /transactiontracking
-servicePort: 8080
-gatewayPort: 80
-gatewayHost: "dev.epay.sbi"
+        limit_req zone=mylimit burst=70 nodelay;
+        limit_conn limitperip 10;
 
-readinessProbe: {}
-livenessProbe: {}
+        if ($request_method !~ ^(GET|HEAD|POST)$) {
+            return 444;
+        }
 
-____value.yaml___________
+        server_tokens off;
 
-apiVersion: networking.istio.io/v1
-kind: VirtualService
-metadata:
-  annotations:
-    meta.helm.sh/release-name: websitefe
-    meta.helm.sh/release-namespace: dev-frontend
-  creationTimestamp: "2025-11-18T06:05:56Z"
-  generation: 1
-  labels:
-    app.kubernetes.io/managed-by: Helm
-  name: dev-epay-website-epay-website
-  namespace: dev-frontend
-  resourceVersion: "505030034"
-  uid: 029a8991-1215-4468-8f5d-6a0120680239
-spec:
-  gateways:
-  - dev-istio-system/dev-gateway
-  hosts:
-  - dev.epay.sbi
-  http:
-  - match:
-    - uri:
-        prefix: /transactiontracking
-    route:
-    - destination:
-        host: websitefe-epay-website
-        port:
-          number: 8080
-_____________vs.yaml____________________________________
+        keepalive_timeout 15s;
+        keepalive_requests 10000;
 
-apiVersion: v1
-kind: Service
-metadata:
-  annotations:
-    meta.helm.sh/release-name: websitefe
-    meta.helm.sh/release-namespace: dev-frontend
-  creationTimestamp: "2025-11-18T06:05:55Z"
-  labels:
-    app.kubernetes.io/instance: websitefe
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: epay-website
-    app.kubernetes.io/version: 1.16.0
-    helm.sh/chart: epay-website-0.1.0
-  name: websitefe-epay-website
-  namespace: dev-frontend
-  resourceVersion: "505030028"
-  uid: 8476a20d-ef17-4231-9481-b4dce4b090fb
-spec:
-  clusterIP: 172.30.105.251
-  clusterIPs:
-  - 172.30.105.251
-  internalTrafficPolicy: Cluster
-  ipFamilies:
-  - IPv4
-  ipFamilyPolicy: SingleStack
-  ports:
-  - name: 8080-tcp
-    port: 8080
-    protocol: TCP
-    targetPort: 8080
-  selector:
-    app.kubernetes.io/instance: websitefe
-    app.kubernetes.io/name: epay-website
-  sessionAffinity: None
-  type: ClusterIP
-status:
-  loadBalancer: {}
-______svc.yaml______
+        # CSP Headers
+        # add_header Content-Security-Policy "default-src 'self' https: ; script-src 'self' ; object-src 'none' ; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com ; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com ; img-src 'self' blob: data: ; base-uri 'self' ; connect-src 'self' https://dev.epay.sbi ; media-src 'self' data:;" always;
+
+        # Security Headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+
+        location /merchantintegration/ {
+            index index.html index.htm;
+            alias /usr/share/nginx/html/merchantintegration/;
+            try_files $uri $uri/ /merchantintegration/index.html;
+            #   index  index.html index.htm;
+            #   try_files $uri  $uri/ /index.html;
+        }
+
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+            root /usr/share/nginx/html/merchantintegration;
+        }
+
+        location ~ /\. {
+            deny all;
+            return 404;
+        }
+    }
+}
+
+events {}
+[root@registry merchantintegration]#
